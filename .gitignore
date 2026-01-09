@@ -1,0 +1,22 @@
+# IDE / Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS generated
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Claude Code / MCP
+.ace-tool/
+.claude/settings.local.json
+
+# Logs
+*.log
+
+# Temp files
+*.tmp
+*.temp
