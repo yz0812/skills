@@ -1,63 +1,50 @@
-# Skills
+# CLAUDE.md
 
-> 生成时间：2026-02-09 03:12
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## 概述
 
-Claude Code Skills 集合项目，提供智能 Git 提交、工作报告生成、思维导图转换和项目初始化等扩展能力。
+Claude Code Skills 集合项目。每个 Skill 是一个独立目录，包含 `SKILL.md` 定义文件，打包为 `.skill`（ZIP）后安装到 `~/.claude/skills/`。
 
-## 技术栈
+## Skill 结构约定
 
-- 语言：Markdown/Text
-- 框架：Claude Code Skills
-- 构建：ZIP (.skill 文件打包)
+每个 Skill 目录的核心文件是 `SKILL.md`，必须包含 YAML frontmatter：
 
-## 项目结构
-
-```mermaid
-graph TD
-    ROOT[skills]
-    ROOT --> GC[git-commit]
-    ROOT --> GR[git-report]
-    ROOT --> MM[mindmap]
-    ROOT --> MI[my-init]
-
-    GC --> |智能提交| GC_DESC[Conventional Commits 生成]
-    GR --> |报告生成| GR_DESC[周报/月报模板]
-    MM --> |可视化| MM_DESC[思维导图转换]
-    MI --> |文档索引| MI_DESC[CLAUDE.md 生成]
+```yaml
+---
+name: skill-name
+description: '触发描述，Claude Code 用此判断何时激活该 skill'
+---
 ```
 
-## 模块索引
+可选子目录：
+- `references/` — 参考规范文档（如 `conventional-commits.md`）
+- `assets/templates/` — 模板文件（如周报/月报 Markdown 模板）
 
-| 模块 | 路径 | 职责 |
-|------|------|------|
-| git-commit | [git-commit](git-commit/CLAUDE.md) | 分析 Git 改动，自动生成 Conventional Commits 格式提交信息 |
-| git-report | [git-report](git-report/CLAUDE.md) | 基于 Git 提交记录生成周报/月报 |
-| mindmap | [mindmap](mindmap/CLAUDE.md) | 将内容转换为可视化思维导图 |
-| my-init | [my-init](my-init/CLAUDE.md) | 扫描项目生成分层 CLAUDE.md 索引文档 |
+## 模块
 
-## Skill 文件说明
+| Skill | 入口 | 触发方式 | MCP 依赖 |
+|-------|------|----------|----------|
+| git-commit | `git-commit/SKILL.md` | `/git-commit` 斜杠命令 | 无 |
+| git-report | `git-report/SKILL.md` | 自然语言："生成周报"、"生成月报" | `mcp-server-git`（可选，降级为 git 命令） |
+| mindmap | `mindmap/SKILL.md` | 自然语言："生成思维导图" | `mindmap-mcp-server`（必需） |
+| my-init | `my-init/SKILL.md` | `/my-init` 斜杠命令 | 无 |
 
-每个 `.skill` 文件是对应目录的 ZIP 打包：
-
-- `git-commit.skill` → `git-commit/` 目录
-- `git-report.skill` → `git-report/` 目录
-- `mindmap.skill` → `mindmap/` 目录
-- `my-init.skill` → `my-init/` 目录
-
-## 安装命令
+## 打包与安装
 
 ```bash
-# 复制 skill 文件到 Claude 配置目录
+# 打包单个 skill（在项目根目录执行）
+cd git-commit && zip -r ../git-commit.skill . && cd ..
+
+# 安装到 Claude Code
 cp *.skill ~/.claude/skills/
 ```
 
-## 触发方式
+根目录的 `.skill` 文件是各目录的 ZIP 打包产物。
 
-| Skill | 斜杠命令 | 自然语言触发 |
-|-------|----------|--------------|
-| git-commit | `/git-commit` | - |
-| git-report | - | "生成周报"、"生成月报" |
-| mindmap | - | "生成思维导图" |
-| my-init | `/my-init` | "初始化项目"、"生成项目文档" |
+## MCP 服务器配置
+
+部分 Skill 依赖 MCP 服务器，配置在 `~/.claude/mcp_servers.json`：
+
+- **mindmap**（必需）：需先 `npm install -g markmap-cli`，然后配置 `uvx mindmap-mcp-server --return-type html`
+- **git-server**（可选）：`uvx mcp-server-git --repository <路径>`，未配置时 git-report 自动降级为 git 命令
