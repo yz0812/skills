@@ -4,86 +4,47 @@
 
 ---
 
-## Git Report
+## 当前技能
 
-基于 Git 提交记录自动生成周报/月报。
+| 形态 | 入口 | 说明 |
+|---|---|---|
+| `ac` plugin + project wrappers | `/ac-plan`、`/ac-execute`、`/ac-debug`、`/ac-init`、`/ac-report`、`/ac-commit` | 对外保留旧命令名，核心实现收敛到一个 plugin，全部仅手动触发 |
+| `mindmap` | 自然语言触发 | 将自然语言或结构化内容转换为可视化思维导图 |
 
-### 使用
-
-直接输入自然语言触发：
+## ac plugin 用法
 
 ```bash
-# 基础用法
-生成本周周报
-生成本月月报
-
-# 指定月份
-生成12月月报
-生成2025年1月月报
-
-# 指定用户
-生成周报 @张三
-生成月报 @李四
-
-# 指定天数
-生成最近10天的周报
-生成最近30天的月报
-
-# 组合使用
-生成用户@张三 最近7天的周报
+/ac-plan 为登录流程补一个实施计划
+/ac-execute .claude/plan/login-flow.md
+/ac-debug 登录接口 500 错误
+/ac-init 电商后台 --modules
+/ac-report 生成最近7天周报
+/ac-commit --scope auth --type fix
 ```
 
-## 模板自定义
+### plugin 内资源
 
-模板位于 `assets/templates/`：
+```text
+.claude/
+└── skills/
+    ├── ac-plan/
+    ├── ac-execute/
+    ├── ac-debug/
+    ├── ac-init/
+    ├── ac-report/
+    └── ac-commit/
 
+ac-plugin/
+├── .claude-plugin/
+│   └── plugin.json
+└── skills/
+    ├── ac-plan/
+    ├── ac-execute/
+    ├── ac-debug/
+    ├── ac-init/
+    ├── ac-report/
+    └── ac-commit/
 ```
-assets/templates/
-├── weekly.md    # 周报模板
-└── monthly.md   # 月报模板
-```
-
-### 可用变量
-
-| 变量 | 说明 | 示例 |
-|------|------|------|
-| `{{DATE_RANGE}}` | 日期范围 | 2025-01-06 ~ 2025-01-10 |
-| `{{USER}}` | 用户名 | 张三 |
-| `{{COMMITS}}` | 提交列表 | 每行一条提交记录 |
-| `{{COMMIT_COUNT}}` | 提交总数 | 15 |
-| `{{REPOS}}` | 涉及仓库 | my-project |
-| `{{STAT_LINES}}` | 代码统计 | +500 -200 (可选) |
-
-### 模板示例
-
-```markdown
-# 周报 {{DATE_RANGE}}
-
-**汇报人**: {{USER}}
-
-## 本周工作内容
-
-{{COMMITS}}
-
-## 统计
-
-- 提交次数: {{COMMIT_COUNT}}
-- 涉及仓库: {{REPOS}}
-```
-
-### MCP 支持
-
-- 优先使用 `git-server` MCP（如已安装）
-- 未安装则自动降级为 `git` 命令
-
-### 多仓库
-
-指定多个路径时，会分别查询并合并结果：
-
-```
-生成本周周报，仓库路径：D:\project1, D:\project2
-```
-
 
 ---
 
@@ -93,16 +54,9 @@ assets/templates/
 
 ### 使用
 
-直接描述需要可视化的内容：
-
 ```bash
-# 项目架构可视化
 帮我生成项目架构的思维导图
-
-# 知识体系可视化
 生成 React Hooks 知识点思维导图
-
-# 需求/会议记录可视化
 把这段需求文档转成思维导图
 ```
 
@@ -116,33 +70,71 @@ assets/templates/
 
 ## 安装
 
-### Skills 目录
+### Plugin 目录
 
-所有 skills 位于 `~/.claude/skills/`，Claude Code 启动时自动加载。
+`ac` 采用“project wrapper + Claude Code plugin”混合形态分发：`.claude/skills/ac-*` 保留旧命令名，`ac-plugin/skills/ac-*` 承载核心实现。
 
+```text
+ac-plugin/
+├── .claude-plugin/
+│   └── plugin.json
+└── skills/
+    ├── ac-plan/
+    │   ├── SKILL.md
+    │   ├── analyzer.md
+    │   └── architect.md
+    ├── ac-execute/
+    │   └── SKILL.md
+    ├── ac-debug/
+    │   └── SKILL.md
+    ├── ac-init/
+    │   └── SKILL.md
+    ├── ac-report/
+    │   ├── SKILL.md
+    │   └── assets/
+    │       └── templates/
+    └── ac-commit/
+        ├── SKILL.md
+        └── references/
 ```
-~/.claude/skills/
-├── git-report/
-│   └── SKILL.md
-├── check-fix/
-│   └── SKILL.md
-└── mindmap/
-    └── SKILL.md
+
+### 打包
+
+plugin 压缩包根目录应直接包含 `.claude-plugin/` 与 `skills/`，不应再额外嵌套一层目录。
+
+### 校验与打包 skill
+
+仓库内提供了本地脚本，兼容 Claude Code 扩展 frontmatter（如 `disable-model-invocation`、`user-invocable`、`allowed-tools`、`context` 等）。
+
+```bash
+# 校验单个 skill
+python scripts/validate_skill.py skills/ac-plan
+
+# 打包单个 skill 到 dist/
+python scripts/package_skill.py skills/ac-plan dist
 ```
+
+这套脚本用于替代仅支持基础 Agent Skills 字段的旧校验逻辑。
+
+### 本地 marketplace 安装
+
+```bash
+claude plugin marketplace add .
+claude plugin install ac@skills-local --scope user
+claude plugin uninstall ac@skills-local --scope user
+```
+
+> 首次安装前先执行一次 `claude plugin marketplace add .`。安装或卸载后，如需当前会话立即生效，执行 `/reload-plugins` 或重开 Claude Code。
 
 ### MCP 服务器配置
 
-部分 skills 依赖 MCP 服务器，需在 `~/.claude/mcp_servers.json` 中配置：
+部分 skills 依赖 MCP 服务器，需在 `~/.claude/mcp_servers.json` 中配置。
 
 #### Mindmap（必需）
-
-1. 安装 markmap-cli：
 
 ```bash
 npm install -g markmap-cli
 ```
-
-2. 配置 MCP 服务器：
 
 ```json
 {
@@ -159,8 +151,6 @@ npm install -g markmap-cli
 
 #### Git Report（可选，推荐）
 
-配置后可获得更丰富的 git 日志信息：
-
 ```json
 {
   "git-server": {
@@ -174,4 +164,12 @@ npm install -g markmap-cli
 }
 ```
 
-> 未配置时自动降级为 `git` 命令。
+> 未配置时 `/ac-report` 自动降级为 `git` 命令。
+
+---
+
+## 安装产物
+
+根目录保留以下 plugin 安装包：
+
+- `ac-plugin.zip`

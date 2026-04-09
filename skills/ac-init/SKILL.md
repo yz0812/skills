@@ -1,6 +1,7 @@
 ---
-name: my-init
-description: '初始化项目 AI 上下文：扫描项目结构并生成 CLAUDE.md 索引文档。当用户说"初始化项目"、"生成项目文档"、"创建 CLAUDE.md"、"/my-init" 时触发。采用「根级简明 + 模块级详尽」策略，自动生成 Mermaid 架构图和模块导航。'
+name: ac-init
+description: '扫描项目结构并生成 CLAUDE.md 上下文文档。'
+disable-model-invocation: true
 ---
 
 # Init - 初始化项目 AI 上下文
@@ -10,7 +11,7 @@ description: '初始化项目 AI 上下文：扫描项目结构并生成 CLAUDE.
 ## 使用方法
 
 ```bash
-/my-init [项目简述] [--modules]
+/ac-init [项目简述] [--modules]
 ```
 
 **参数说明：**
@@ -135,7 +136,7 @@ graph TD
 ### 推荐下一步
 - [ ] 检查文档准确性
 - [ ] 补充业务逻辑
-- [ ] 如需模块级文档，使用 `/my-init --modules` 重新生成
+- [ ] 如需模块级文档，使用 `/ac-init --modules` 重新生成
 ```
 
 ## 规则

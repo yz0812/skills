@@ -30,11 +30,11 @@
 Scope 表示影响范围，通常是模块/目录名：
 
 ```
-feat(api): ...       # API 模块
-fix(auth): ...       # 认证模块
-refactor(models): ...# 数据模型
-test(utils): ...     # 工具函数测试
-build(deps): ...     # 依赖更新
+feat(api): ...
+fix(auth): ...
+refactor(models): ...
+test(utils): ...
+build(deps): ...
 ```
 
 **多 scope：** `fix(api,auth): ...`（逗号分隔，尽量避免）
@@ -71,10 +71,6 @@ feat(api)!: 重构用户接口
 BREAKING CHANGE: /api/user 接口返回格式变更，
 data 字段从数组改为对象
 ```
-
-**两种写法：**
-1. type 后加 `!`：`feat(api)!: ...`
-2. footer 中声明：`BREAKING CHANGE: 描述`
 
 ### Issue 关联
 

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 概述
 
-Claude Code Skills 集合项目。每个 Skill 是一个独立目录，包含 `SKILL.md` 定义文件，打包为 `.skill`（ZIP）后安装到 `~/.claude/skills/`。
+Claude Code Skills 集合项目。当前采用混合形态 `ac`：`ac-plugin/` 中集中承载 6 个仅手动触发的 skill 实现，`.claude/skills/ac-*` 作为兼容入口保留 `/ac-plan`、`/ac-execute`、`/ac-debug`、`/ac-init`、`/ac-report`、`/ac-commit` 命令；其余独立 skill 如 `mindmap` 按原方式保留。
 
 ## Skill 结构约定
 
@@ -23,28 +23,23 @@ description: '触发描述，Claude Code 用此判断何时激活该 skill'
 
 ## 模块
 
-| Skill | 入口 | 触发方式 | MCP 依赖 |
+| 形态 | 入口 | 触发方式 | MCP 依赖 |
 |-------|------|----------|----------|
-| git-commit | `git-commit/SKILL.md` | `/git-commit` 斜杠命令 | 无 |
-| git-report | `git-report/SKILL.md` | 自然语言："生成周报"、"生成月报" | `mcp-server-git`（可选，降级为 git 命令） |
+| ac plugin + wrappers | `.claude/skills/ac-*` + `ac-plugin/.claude-plugin/plugin.json` + `ac-plugin/skills/*` | `/ac-plan`、`/ac-execute`、`/ac-debug`、`/ac-init`、`/ac-report`、`/ac-commit` | `ac-report` 可选 `git-server`；其余按各自流程执行 |
 | mindmap | `mindmap/SKILL.md` | 自然语言："生成思维导图" | `mindmap-mcp-server`（必需） |
-| my-init | `my-init/SKILL.md` | `/my-init` 斜杠命令 | 无 |
 
 ## 打包与安装
 
 ```bash
-# 打包单个 skill（在项目根目录执行）
-cd git-commit && zip -r ../git-commit.skill . && cd ..
-
-# 安装到 Claude Code
-cp *.skill ~/.claude/skills/
+# 加载本地 plugin 进行测试
+claude --plugin-dir ./ac-plugin
 ```
 
-根目录的 `.skill` 文件是各目录的 ZIP 打包产物。
+plugin 压缩包根目录应直接包含 `.claude-plugin/` 与 `skills/`，不应额外嵌套 plugin 目录。
 
 ## MCP 服务器配置
 
 部分 Skill 依赖 MCP 服务器，配置在 `~/.claude/mcp_servers.json`：
 
 - **mindmap**（必需）：需先 `npm install -g markmap-cli`，然后配置 `uvx mindmap-mcp-server --return-type html`
-- **git-server**（可选）：`uvx mcp-server-git --repository <路径>`，未配置时 git-report 自动降级为 git 命令
+- **git-server**（可选）：`uvx mcp-server-git --repository <路径>`，未配置时 `/ac-report` 自动降级为 git 命令
