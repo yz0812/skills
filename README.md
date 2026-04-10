@@ -8,7 +8,7 @@
 
 | 形态 | 入口 | 说明 |
 |---|---|---|
-| `ac` plugin + project wrappers | `/ac-plan`、`/ac-execute`、`/ac-debug`、`/ac-init`、`/ac-report`、`/ac-commit` | 对外保留旧命令名，核心实现收敛到一个 plugin，全部仅手动触发 |
+| `ac` plugin + project wrappers | `/ac-plan`、`/ac-execute`、`/ac-debug`、`/ac-init`、`/ac-review`、`/ac-report`、`/ac-commit` | 对外保留旧命令名，核心实现收敛到一个 plugin，全部仅手动触发；其中多个 skill 采用“主线程 + 按需 subagents 辅助”模式 |
 | `mindmap` | 自然语言触发 | 将自然语言或结构化内容转换为可视化思维导图 |
 
 ## ac plugin 用法
@@ -18,9 +18,12 @@
 /ac-execute .claude/plan/login-flow.md
 /ac-debug 登录接口 500 错误
 /ac-init 电商后台 --modules
+/ac-review HEAD~1
 /ac-report 生成最近7天周报
 /ac-commit --scope auth --type fix
 ```
+
+> `/ac-review` 采用两段式流转：先生成 `.claude/review/<功能名>.md` 审查报告；确认整改范围后，再生成 `.claude/plan/review-<功能名>.md` 供 `/ac-execute` 执行。
 
 ### plugin 内资源
 
@@ -31,6 +34,7 @@
     ├── ac-execute/
     ├── ac-debug/
     ├── ac-init/
+    ├── ac-review/
     ├── ac-report/
     └── ac-commit/
 
@@ -42,6 +46,7 @@ ac-plugin/
     ├── ac-execute/
     ├── ac-debug/
     ├── ac-init/
+    ├── ac-review/
     ├── ac-report/
     └── ac-commit/
 ```
@@ -89,6 +94,9 @@ ac-plugin/
     │   └── SKILL.md
     ├── ac-init/
     │   └── SKILL.md
+    ├── ac-review/
+    │   ├── SKILL.md
+    │   └── reviewer.md
     ├── ac-report/
     │   ├── SKILL.md
     │   └── assets/
