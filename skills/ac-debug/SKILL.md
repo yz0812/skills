@@ -1,4 +1,4 @@
-   ---
+---
 name: ac-debug
 description: '问题诊断：定位报错与异常根因，按需并行取证，并在用户确认后执行最小修复与验证。'
 disable-model-invocation: true
