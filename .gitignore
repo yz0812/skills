@@ -3,3 +3,5 @@
 .vscode/
 .idea
 .serena
+__pycache__/
+*.pyc
